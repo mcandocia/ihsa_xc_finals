@@ -77,7 +77,7 @@ end.rcode-->
 
 
 
-<!--begin.rcode pace_density, echo=FALSE, message=FALSE, warning=FALSE, fig.height=3
+<!--begin.rcode pace_density, echo=FALSE, message=FALSE, warning=FALSE, fig.height=3, fig.width=10
 # show overall time distribution split up between divisions, sexes, and years (try looking at linear model)
 
 default_subtitle="race distance = 3 miles; 2015-2017; paces over 10 minutes/mile removed; \n2017 boys 2A division not included due to incomplete data"
@@ -136,22 +136,26 @@ end.rcode-->
 
 <p> In high school, it was fun to see/speculate how different ages performedacross the different sexes and divisions. There was a notion that it was mostly juniors and seniors (3rd and 4th year) placing for boys, while age didn't matter at all for girls. </p>
 
-<p> Looking at the below bar graph, it seems like that assertion is correct, to some degree. If I had to explain it, I would say that boys are still hitting puberty by the time they enter high school, and their muscles develop much more significantly than girls'. The 1A divisions seem to have a less noticeable effect here, possibly due to the more relaxed nature of smaller programs. Conversely, the 3A programs are more likely to be more rigorous and competitive, which would mean that students improve much more over time at these programs than those of lower divisions (in general).</p>
+<p> Looking at the below bar graph, it seems like that assertion is correct, to some degree. If I had to explain it, I would say that boys are still hitting puberty by the time they enter high school, and their muscles develop much more significantly than girls'. There seems to be an odd ridge for the girls 3A division, although I think that is a time-lag effect from a particularly strong class of girls in 2015 as sophomores and in 2017 as seniors. </p>
 
 <!--begin.rcode year_in_schoo, echo=FALSE, message=FALSE, warning=FALSE
 
 # show rank at 1, 2, 3 vs. each other
 # compare speeds across years, divisions, and sexes
 percent_custom <- function(n){
+  if (n==1)
+    return(identity)
   function(x){
     percent(x/n)
   }
 }
 
-ggplot(xcresults %>% filter(place <= 25 & year != 2016)) +
+#have to fudge the extra year for boys 2A
+ggplot(xcresults %>% filter(as.numeric(place) <= 25 & year != 2016) %>% 
+         rbind(xcresults %>% filter(as.numeric(place) <= 25 & year == 2015 & sex=='boys' & division=='2A'))) +
   geom_bar(aes(x=standing, color=standing, fill=standing)) +
   facet_grid(division ~ sex) + 
-  scale_y_continuous(label=percent_custom(200)) + 
+  scale_y_continuous(label=percent_custom(50)) + 
   scale_fill_manual('Year in School', values=cet_pal(4)) + 
   scale_color_manual('Year in School', values = cet_pal(4)) + 
   xlab('') + ylab('Proportion') + ggtitle('Proportion of Students by Year in School \nPlacing Top 25 at IHSA State Cross-Country Race',
