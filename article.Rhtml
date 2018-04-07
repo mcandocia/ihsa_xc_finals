@@ -1,0 +1,210 @@
+<style>
+  .caption{
+    font-size:12px;
+  }
+</style>
+
+<h2> Introduction </h2>
+
+<p> In Illinois, high schoolers who run cross-country compete in 3-mile races throughout the fall, usually competing at local parks, or possibly farmland if they live in a more rural area. At the end of the season, which is early November, athletes from each division&mdash;1A, 2A, and 3A&mdash;compete in Peoria's Detweiler Park, a fairly flat and open course. The division corresponds to the size of the competing school, where 1A is the smallest, and 3A is the largest.</p>
+
+<p> To get a better idea of what the race looks like, below is the map of the course from the <a href="https://www.ihsa.org/documents/ccb/sf_course.pdf" id="ihsa_course_map_out" target="_blank">IHSA website</a>, followed by some footage I took on my old digital camera back in 2006 of that year's race: </p>
+
+<div id="detweiler_park_map_div">
+ <img height="450px" width="600px" src="http://maxcandocia.com/media/articles/ihsa_xc/detweiler_park_xc_course.PNG"/>
+ <p class="caption"> Detwieler Park Cross-Country Course </p>
+</div>
+
+<div id="ihsa_xc_2006_finals_video_div">
+<video width="640" height="480" controls>
+  <source src="http://maxcandocia.com/media/articles/ihsa_xc/ihsa_xc_2006_combined.webm" type="video/webm">
+  Your browser does not support this video type (webm)
+</video>
+<p class="caption"> First 12 seconds of the race, followed by 2:20-3:00 of the race. The winning time was 14:07 by <a href="https://en.wikipedia.org/wiki/Evan_Jager" id="wiki_evan_jager_out" target="_blank">Evan Jager</a>, current North American record holder of the 3000m steeple chase. </p>
+</div>
+
+<p> If you look at the map, you can see that a very wide start line converges into a very small bottleneck after about 0.3 miles. After that, the course is relatively narrow for the remainder.</p>
+
+<h2> Observing Trends </h2>
+
+<p> The results of past races are available on the IHSA website for both <a href="https://www.ihsa.org/SportsActivities/GirlsCrossCountry/RecordsHistory.aspx?url=/data/ccg/records/index.htm" id="ihsa_girls_xc_results_out" target="_blank">girls</a> and <a href="https://www.ihsa.org/SportsActivities/BoysCrossCountry/RecordsHistory.aspx?url=/data/ccg/records/index.htm" id="ihsa_girls_xc_results_out" target="_blank">boys</a>. </p>
+
+<p> In recent years, viewing splits from chip timing has become more common, and <a href="http://www.raceresultsplus.com/" id="river_city_race_management_out" target="_blank">River City Race Management</a> has made the splits of the races available for the years <a href="http://www.raceresultsplus.com/event/2015-ihsa-state-cross-country-championships" id="rcrm_ihsa_2016_out" target="_blank">2015</a>, <a href="http://www.raceresultsplus.com/event/2016-ihsa-state-cross-country-championship-finals" id="rcrm_ihsa_2016_out" target="_blank">2016</a>, and <a href="http://www.raceresultsplus.com/event/ihsa-state-meet" id="rcrm_ihsa_2017_out" target="_blank">2017</a>. The results, however, are not all formatted the same, and it appears that individual results for the 2017 2A Boys race is missing. Judging by the filenames of the other results from that year, all of the results had been misplaced originally, but the boys 2A race was the only one that didn't get fixed.</p>
+
+<p> There is quite a bit of information that can be gathered from here, but I will look at a few different figures to get an idea of what competition looks like and what the characteristics of the faster runners are in each division for each sex.</p>
+
+
+
+<!--begin.rcode code-setup, echo=FALSE, message=FALSE, warning=FALSE
+source('cleaning.r')
+source('plotting_functions.r')
+library(ggplot2)
+library(scales)
+library(cetcolor)
+
+inferno_palette = cet_pal(7, 'inferno')
+
+format_race_time <- function(x){
+  nminutes = x %/% 60
+  nseconds = x %% 60
+  sprintf('%s:%02.0f', nminutes, nseconds)
+}
+
+format_race_time_tenths <- function(x){
+  nminutes = x %/% 60
+  nseconds = x %% 60
+  sprintf('%s:%02.1f', nminutes, nseconds)
+}
+
+
+# data.frame `xcresults``
+# time_%s_rank - overall rank
+# time_%s_seconds
+# mile_%s_split
+# time_%s_seconds_total
+# time_%s_mile_seconds_total - for 1, 2, and 3
+# overall_pace
+# time_overall_seconds
+
+library(ggplot2)
+end.rcode-->
+
+<h2> Average Time </h2>
+
+<p> The average race paces of each division seems to follow a common trend: the higher the division, the faster the average pace and the more narrow the distribution. Even the girls 3A division is narrower than the boys 1A division, despite the slower average speed. </p>
+
+<p>The girls' races seem to be wider, as well, although this is partly because the difficulty in increasing pace becomes when one is running faster. For example, improving from a 7-minute/mile pace to a 6:30/mile pace is much easier than improving from a 6:30/mile to 6:00/mile pace.</p>
+
+
+
+<!--begin.rcode pace_density, echo=FALSE, message=FALSE, warning=FALSE, fig.height=3
+# show overall time distribution split up between divisions, sexes, and years (try looking at linear model)
+
+default_subtitle="race distance = 3 miles; 2015-2017; paces over 10 minutes/mile removed; \n2017 boys 2A division not included due to incomplete data"
+
+ggplot(xcresults %>% filter(overall_pace < 600)) + geom_density(aes(x=overall_pace, fill=division, color=division),
+                                 alpha=0.4) + 
+  facet_grid(.~sex) + scale_x_continuous(label=format_race_time, breaks = 60 * seq(5,9,0.5)) + 
+  ggtitle("Distribution of Race Paces of IHSA State Cross-Country Race", 
+          subtitle="race distance = 3 miles; 2015-2017; paces over 10 minutes/mile removed; \n2017 boys 2A division not included due to incomplete data") + 
+  xlab('Pace (minutes/mile)') + better_text_size_manylabs 
+
+
+end.rcode-->
+
+<h2> Differences in Split Times </h2>
+
+<p> When racing, you ideally want to maintain as even of a pace as possible. Confounding factors that can break this strategy include changes in elevation, changes in terrain, and obstructions. Oftentimes runners (especially younger ones) will start out very fast and then slow down partway into the race. For this race, it is somewhat unavoidable, as the beginning starts on a downhill, followed by a bottleneck that is somewhat unforgiving if you are caught in a crowd moving slower than you'd like.</p>
+
+<p> Looking at how percent changes in speed over the three miles' splits correlate to place can give us an idea of what strategy the best runners are using. </p>
+
+<!--begin.rcode split_deviations, echo=FALSE, message=FALSE, warning=FALSE
+
+ggplot(xcresults %>% filter(mile_2_split_deviation_percent < 0.5 & mile_3_split_deviation < 2.5)) + 
+  geom_point(aes(x=mile_2_split_deviation_percent, y=mile_3_split_deviation_percent,
+                                   color=as.numeric(place)),
+             alpha=0.5) + 
+  facet_grid(division ~ sex) + 
+  scale_color_gradientn('place\n', colors=inferno_palette) + 
+  scale_y_continuous(label=percent) + scale_x_continuous(label=percent) + 
+  xlab('Mile 2 Pace Change vs. Mile 1') + ylab('Mile 3 Pace Change vs. Mile 2') + better_text_size_manylabs + 
+  ggtitle("Split Changes in IHSA State Cross-Country Race \nColored by Ranking",
+          subtitle=default_subtitle)
+end.rcode-->
+
+<p> It looks like the ones who are performing worse across all divisions and sexes are slowing down considerably after the first mile, around 10-15&#37;, while the top performers tend to only slow down around 5-10&#37;. We can look at the top 25 of each race (those are the places that earn a medal and the title "all-state"), we can see if this trend continues for the fastest runners. </p>
+
+<!--begin.rcode top_split_deviations, echo=FALSE, message=FALSE, warning=FALSE
+# for top 25 in each race
+ggplot(xcresults %>% filter(mile_2_split_deviation_percent < 0.5 & mile_3_split_deviation < 0.5 & as.numeric(place) <= 25 )) + 
+  geom_point(aes(x=mile_2_split_deviation_percent, y=mile_3_split_deviation_percent,
+                 color=as.numeric(place)),
+             alpha=0.75, size=2.5) + 
+  facet_grid(division ~ sex) + 
+  scale_color_gradientn('place\n', label = as.integer, colors=inferno_palette) + 
+  scale_y_continuous(label=percent) + scale_x_continuous(label=percent) + 
+  xlab('Mile 2 Pace Change vs. Mile 1') + ylab('Mile 3 Pace Change vs. Mile 2') + better_text_size_manylabs +
+  ggtitle("Split Changes in IHSA State Cross-Country Race \nColored by Ranking",
+          subtitle=default_subtitle)
+
+
+end.rcode-->
+
+<p> The most noticeable trend I can see is that the faster runners (dark purple) have more of a tendency to finish their third mile noticeably faster than their second in the boys 3A division. That is quite impressive, considering they are already running sub 5-minute miles back-to-back. When I was looking at the results, I noticed that the top runners were neck-to-neck going into the third mile. </p> 
+
+<h2> Year in School </h2>
+
+<p> In high school, it was fun to see/speculate how different ages performedacross the different sexes and divisions. There was a notion that it was mostly juniors and seniors (3rd and 4th year) placing for boys, while age didn't matter at all for girls. </p>
+
+<p> Looking at the below bar graph, it seems like that assertion is correct, to some degree. If I had to explain it, I would say that boys are still hitting puberty by the time they enter high school, and their muscles develop much more significantly than girls'. The 1A divisions seem to have a less noticeable effect here, possibly due to the more relaxed nature of smaller programs. Conversely, the 3A programs are more likely to be more rigorous and competitive, which would mean that students improve much more over time at these programs than those of lower divisions (in general).</p>
+
+<!--begin.rcode year_in_schoo, echo=FALSE, message=FALSE, warning=FALSE
+
+# show rank at 1, 2, 3 vs. each other
+# compare speeds across years, divisions, and sexes
+percent_custom <- function(n){
+  function(x){
+    percent(x/n)
+  }
+}
+
+ggplot(xcresults %>% filter(place <= 25 & year != 2016)) +
+  geom_bar(aes(x=standing, color=standing, fill=standing)) +
+  facet_grid(division ~ sex) + 
+  scale_y_continuous(label=percent_custom(200)) + 
+  scale_fill_manual('Year in School', values=cet_pal(4)) + 
+  scale_color_manual('Year in School', values = cet_pal(4)) + 
+  xlab('') + ylab('Proportion') + ggtitle('Proportion of Students by Year in School \nPlacing Top 25 at IHSA State Cross-Country Race',
+                                          subtitle='For years 2015 and 2017; race is 3 miles long at Detweiler Park, Peoria, IL') #+
+   #better_text_size_manylabs
+
+end.rcode-->
+
+<h2> Years at State </h2>
+
+<p> One last thing I wanted to look at was the distribution of the top 25 runners in each race based on how many years they ran a state meet in the past 2 years. Since I did not collect data for 2014, I am only looking at 2017 data. For the 3A division, it seems like having been to the state race before is a prerequisite for doing well.</p>
+
+
+<!--begin.rcode state_experience, echo=FALSE, message=FALSE, warning=FALSE
+experience_table = with(xcresults %>% filter(year==2017 & as.numeric(place) <= 25), 
+                        table(division, sex, years_experience))
+
+#htmlTable(melt(experience_table)$value, 
+#          cgroup=c('Boys','Girls'),
+#          header = rep(c('1A','2A','3A'), 2),
+#          n.cgroup = c(3, 3),
+#          rnames = c('1st year','2nd year', '3rd year'),
+#          css.class='experience_table'
+#         # rgroup=c('1 year','2 years', '3 years'),
+#         # n.rgroup = c(1,1,1)
+#)
+
+
+ggplot(xcresults %>% filter(as.numeric(place) <= 25 & year==2017)) + 
+  geom_boxplot(aes(x=years_experience, y=as.numeric(place), group=years_experience, fill=factor(years_experience))) + 
+  facet_grid(division ~ sex) + better_text_size_manylabs + 
+  geom_point(aes(x=years_experience,  y=as.numeric(place), group=years_experience), size=0.5) + 
+  scale_fill_discrete('years attended \nstate race\n') + 
+  xlab('Years') + ylab('Place')  +
+  ggtitle('Distribution of Top 25 in 2017 IHSA  \nState Cross-Country Race')
+end.rcode-->
+
+<p>  I can't make too many generalizations about the 2A division, since the boys' data is missing, but the 1A data seems almost downright counterintuitive with the more experienced runners not performing as well. This is a byproduct of statistical censoring, though. If we view all 200+ racers at once for each boxplot, then it is clear that more experience at the state meet is advantageous.</p>
+
+<!--begin.rcode state_experience_2,  echo=FALSE, message=FALSE, warning=FALSE
+ggplot(xcresults %>% filter(year==2017 & years_experience < 5)) + 
+  geom_boxplot(aes(x=years_experience, y=as.numeric(place), group=years_experience, fill=factor(years_experience))) + 
+  facet_grid(division ~ sex) + better_text_size_manylabs + 
+  geom_point(aes(x=years_experience,  y=as.numeric(place), group=years_experience), size=0.5)  + 
+  scale_fill_discrete('years attended \nstate race\n') + 
+  xlab('Years') + ylab('Place') + 
+  ggtitle('Distribution of Racers in 2017 IHSA  \nState Cross-Country Race')
+
+end.rcode-->
+
+<h2> Links </h2>
+
+<ul>
+<li> <a href="https://github.com/mcandocia/ihsa_xc_finals" id="git_ihsa_xc_finals_out" target="_blank">GitHub Repo</a></li>
+<li> <a href="http://maxcandocia.com/media/articles/ihsa_xc/xcresults.csv" id="xc_results_download" target="download">Cleaned CSV Download</a></li>
+</ul>
